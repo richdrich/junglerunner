@@ -1,0 +1,14 @@
+<html>
+<head><title>Prompt</title></head>
+
+<body>
+<form action='{{SCRIPT}}' method='get'>
+<h2>
+<input type='hidden' name='seq' value='{{SEQ}}' />
+<input type='hidden' name='id' value='{{ID}}' />
+{{TEXT}}
+</h2>
+<p><input type='submit' name='cancel' value='Cancel' /><input type='submit' name='submit' value='Ok' /></p>
+</form>
+</body>
+</html>
