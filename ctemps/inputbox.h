@@ -1,6 +1,6 @@
 #ifndef inputbox_H
 #define inputbox_H
-const char * inputbox = 
+static const char * inputbox = 
 "<html>\n"
 "<head><title>Input</title></head>\n"
 "\n"

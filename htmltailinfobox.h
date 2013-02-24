@@ -12,12 +12,8 @@
 
 class HtmltailInfoBox : public HtmltailOption {
 public:
-	HtmltailInfoBox(const char *text, int height, int width)
-	: HtmltailOption()
+	HtmltailInfoBox() : HtmltailOption()
 	{
-		parameters["TEXT"] = string(text);
-		parameters["HEIGHT"] = height;
-		parameters["WIDTH"] = width;
 	}
 
 	virtual int run() {
@@ -34,9 +30,7 @@ public:
 	}
 
 private:
-	string text;
-	int height;
-	int width;
+
 };
 
 

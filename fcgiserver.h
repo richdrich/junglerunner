@@ -119,7 +119,7 @@ public:
 	        ::UriQueryListA *queryList;
 	        int numparams;
 	        string id;
-	        int reqSeq;
+	        int reqSeq=1;
 	        UserMessage userMessage;
 
 	        int res = ::uriDissectQueryMallocA(&queryList, &numparams, qstring, &qstring[strlen(qstring)]);

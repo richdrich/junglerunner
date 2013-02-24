@@ -36,13 +36,19 @@ struct to_string_visitor : boost::static_visitor<>
 class HtmltailOption {
 public:
 	HtmltailOption() {
-		parameters["SCRIPT"] = string(::getenv("HTMLTAIL_SCRIPTPATH"));
-		id = string(::getenv("HTMLTAIL_ID"));
+		const char *script = ::getenv("HTMLTAIL_SCRIPTPATH");
+		parameters["SCRIPT"] = string(script==NULL ? "" : script);
+		const char * idc = ::getenv("HTMLTAIL_ID");
+		id = string(idc==NULL ? "" : idc);
 		parameters["ID"]  = id;
 		parameters["SEQ"] = readSequence();
 	}
 
 	virtual ~HtmltailOption() {};
+
+	void addParameters(map<string, variant<string, int> > addPars) {
+		parameters.insert(addPars.begin(), addPars.end());
+	}
 
 	virtual int run()=0;
 

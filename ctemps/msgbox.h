@@ -1,6 +1,6 @@
 #ifndef msgbox_H
 #define msgbox_H
-const char * msgbox = 
+static const char * msgbox = 
 "<html>\n"
 "<head><title>Prompt</title></head>\n"
 "\n"

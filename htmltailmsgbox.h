@@ -18,12 +18,16 @@
 
 class HtmltailMsgBox : public HtmltailOption {
 public:
-	HtmltailMsgBox(const char *text, int height, int width) : HtmltailOption()
-	{
-		parameters["TEXT"] = string(text);
-		parameters["HEIGHT"] = height;
-		parameters["WIDTH"] = width;
+	HtmltailMsgBox() : HtmltailOption() {
+
 	}
+
+//	HtmltailMsgBox(const char *text, int height, int width) : HtmltailOption()
+//	{
+//		parameters["TEXT"] = string(text);
+//		parameters["HEIGHT"] = height;
+//		parameters["WIDTH"] = width;
+//	}
 
 	virtual int run() {
 

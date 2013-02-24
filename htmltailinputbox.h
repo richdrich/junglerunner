@@ -18,13 +18,17 @@
 
 class HtmltailInputBox : public HtmltailOption {
 public:
-	HtmltailInputBox(const char *text, int height, int width, string init) : HtmltailOption()
-	{
-		parameters["TEXT"] = string(text);
-		parameters["HEIGHT"] = height;
-		parameters["WIDTH"] = width;
-		parameters["INIT"] = init;
+	HtmltailInputBox() : HtmltailOption() {
+
 	}
+
+//	HtmltailInputBox(const char *text, int height, int width, string init) : HtmltailOption()
+//	{
+//		parameters["TEXT"] = string(text);
+//		parameters["HEIGHT"] = height;
+//		parameters["WIDTH"] = width;
+//		parameters["INIT"] = init;
+//	}
 
 	virtual int run() {
 

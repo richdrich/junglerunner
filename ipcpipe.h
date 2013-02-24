@@ -3,6 +3,7 @@
 #define IPC_H
 
 #include <string>
+#include <boost/filesystem.hpp>
 #include <boost/thread.hpp>
 #include <boost/uuid/uuid.hpp>            // uuid class
 #include <boost/uuid/uuid_generators.hpp> // generators
