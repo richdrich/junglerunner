@@ -10,6 +10,7 @@
 
 #include "htmltailoption.h"
 
+
 class HtmltailInfoBox : public HtmltailOption {
 public:
 	HtmltailInfoBox() : HtmltailOption()
@@ -17,12 +18,8 @@ public:
 	}
 
 	virtual int run() {
-		const char * tplText = "<html><head><title>Info</title></head>\n"
-			"<body><h2>"
-			"{{TEXT}}"
-			"</h2></body></html>";
 
-		string page = pageFromTemplate(tplText);
+		string page = pageFromTemplate(getTemplateText().c_str());
 
 		getPipe()->send(page.c_str());
 

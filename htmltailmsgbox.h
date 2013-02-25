@@ -14,7 +14,6 @@
 #include "htmltailoption.h"
 #include "usermessage.h"
 
-#include "ctemps/msgbox.h"
 
 class HtmltailMsgBox : public HtmltailOption {
 public:
@@ -29,25 +28,25 @@ public:
 //		parameters["WIDTH"] = width;
 //	}
 
-	virtual int run() {
-
-		string page = pageFromTemplate(msgbox);
-
-		getPipe()->send(page.c_str());
-
-		string response = getPipe()->receive();
-		UserMessage msg = UserMessage::fromSerialized(response.c_str());
-
-		fprintf(stderr, "setenv sequence %d\n", msg.sequence);
-		writeSequence(boost::lexical_cast<string>(msg.sequence));
-
-		if(msg.args.count("cancel")) {
-			return -1;
-		}
-
-
-		return 0;
-	}
+//	virtual int run() {
+//
+//		string page = pageFromTemplate(msgbox);
+//
+//		getPipe()->send(page.c_str());
+//
+//		string response = getPipe()->receive();
+//		UserMessage msg = UserMessage::fromSerialized(response.c_str());
+//
+//		fprintf(stderr, "setenv sequence %d\n", msg.sequence);
+//		writeSequence(boost::lexical_cast<string>(msg.sequence));
+//
+//		if(msg.args.count("cancel")) {
+//			return -1;
+//		}
+//
+//
+//		return 0;
+//	}
 
 private:
 

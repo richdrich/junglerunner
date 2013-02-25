@@ -1,0 +1,9 @@
+<html><head><title>Info</title>
+<link rel="stylesheet" type="text/css" href="/resource/default.css">
+</head>
+
+<body>
+<div class='main'>
+<div class='content text gentext'>{{TEXT}}</div>
+<div>
+</body></html>

@@ -14,7 +14,6 @@
 #include "htmltailoption.h"
 #include "usermessage.h"
 
-#include "ctemps/inputbox.h"
 
 class HtmltailInputBox : public HtmltailOption {
 public:
@@ -30,28 +29,33 @@ public:
 //		parameters["INIT"] = init;
 //	}
 
-	virtual int run() {
+//	virtual int run() {
+//
+//		string page = pageFromTemplate(inputbox);
+//
+//		getPipe()->send(page.c_str());
+//
+//		string response = getPipe()->receive();
+//		UserMessage msg = UserMessage::fromSerialized(response.c_str());
+//
+//		// fprintf(stderr, "setenv sequence %d\n", msg.sequence);
+//		writeSequence(boost::lexical_cast<string>(msg.sequence));
+//
+//		fputs(msg.args["input"].c_str(), stderr);
+//
+//		if(msg.args.count("cancel")) {
+//			return -1;
+//		}
+//
+//
+//		return 0;
+//	}
 
-		string page = pageFromTemplate(inputbox);
-
-		getPipe()->send(page.c_str());
-
-		string response = getPipe()->receive();
-		UserMessage msg = UserMessage::fromSerialized(response.c_str());
-
-		// fprintf(stderr, "setenv sequence %d\n", msg.sequence);
-		writeSequence(boost::lexical_cast<string>(msg.sequence));
-
+	virtual int processResultMsg(UserMessage msg) {
 		fputs(msg.args["input"].c_str(), stderr);
 
-		if(msg.args.count("cancel")) {
-			return -1;
-		}
-
-
-		return 0;
+		return HtmltailOption::processResultMsg(msg);
 	}
-
 private:
 
 

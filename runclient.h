@@ -74,7 +74,7 @@ public:
 		}
 
 		pActiveCommand->optionClass->addParameters(params);
-
+		pActiveCommand->optionClass->setOptionName(string(&pActiveCommand->option[2]));
 		return pActiveCommand->optionClass->run();
 	}
 

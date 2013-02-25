@@ -1,19 +1,32 @@
 #!/bin/bash
 
-while (( "$#" )); do
-	cat <<ENDS >ctemps/$1.h
-#ifndef $1_H
-#define $1_H
-static const char * $1 = 
+	cat <<ENDS >ctemps/alltemplates.h
+#ifndef ALLTEMPLATES_H
+#define ALLTEMPLATES_H
+static const char * AllTemplates[][2] = {
 ENDS
-	
-	sed -f cstringize.sed templates/$1.htt >>ctemps/$1.h
-	
-	cat <<ENDS2 >>ctemps/$1.h
-;
-#endif
-ENDS2
 
+count=0
+first=true
+while (( "$#" )); do
+	if $first ; then
+		first=false
+	else
+		echo ","  >>ctemps/alltemplates.h
+	fi
+	 
+	echo '{ "'$1'", '  >>ctemps/alltemplates.h
+	sed -f cstringize.sed templates/$1.htt >>ctemps/alltemplates.h
+	
+	echo "}" >>ctemps/alltemplates.h
+
+	let count++
 	shift
 	done
+	
+echo "};" >>ctemps/alltemplates.h
+
+echo "const int NumTemplates="$count";" >>ctemps/alltemplates.h
+
+echo "#endif" >>ctemps/alltemplates.h
 

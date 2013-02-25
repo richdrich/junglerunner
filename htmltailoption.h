@@ -17,6 +17,8 @@
 #include <ctemplate/template.h>
 
 #include "ipcpipe.h"
+#include "ctemps/alltemplates.h"
+#include "usermessage.h"
 
 using namespace std;
 using namespace boost;
@@ -36,6 +38,10 @@ struct to_string_visitor : boost::static_visitor<>
 class HtmltailOption {
 public:
 	HtmltailOption() {
+		for(int n=0; n<NumTemplates; n++) {
+			allTemplateMap[string(AllTemplates[n][0])] = AllTemplates[n][1];
+		}
+
 		const char *script = ::getenv("HTMLTAIL_SCRIPTPATH");
 		parameters["SCRIPT"] = string(script==NULL ? "" : script);
 		const char * idc = ::getenv("HTMLTAIL_ID");
@@ -46,19 +52,48 @@ public:
 
 	virtual ~HtmltailOption() {};
 
+	void setOptionName(string optionName) {
+		this->optionName = optionName;
+	}
+
 	void addParameters(map<string, variant<string, int> > addPars) {
 		parameters.insert(addPars.begin(), addPars.end());
 	}
 
-	virtual int run()=0;
+	virtual int run() {
+
+		string page = pageFromTemplate(getTemplateText().c_str());
+
+		getPipe()->send(page.c_str());
+
+		string response = getPipe()->receive();
+		UserMessage msg = UserMessage::fromSerialized(response.c_str());
+
+		// fprintf(stderr, "setenv sequence %d\n", msg.sequence);
+		writeSequence(boost::lexical_cast<string>(msg.sequence));
+
+		return processResultMsg(msg);
+	}
 
 protected:
+	virtual int processResultMsg(UserMessage msg) {
+		if(msg.args.count("cancel")) {
+			return -1;
+		}
+
+		return 0;
+	}
+
 	shared_ptr<IpcPipe> getPipe() {
 
 		const char *id = ::getenv("HTMLTAIL_ID");
 		shared_ptr<IpcPipe> res(new IpcPipe(id, true));
 
 		return res;
+	}
+
+	string getTemplateText() {
+		return allTemplateMap[optionName];
 	}
 
 	string pageFromTemplate(const char *tmplText) {
@@ -104,8 +139,10 @@ protected:
 		seqStream.close();
 	}
 
+	string optionName;
 	string id;
 	map<string, variant<string, int> > parameters;
+	map<string, string> allTemplateMap;
 };
 
 
