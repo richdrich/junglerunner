@@ -19,6 +19,7 @@ public:
 		threadCompleteOccurred = false;
 		lastSequence = 0;
 		finishIncoming = false;
+		incomingThreadHandle=NULL;
 	}
 
 	FCGX_Stream * getOutStream() {

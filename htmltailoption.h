@@ -14,11 +14,14 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/variant.hpp>
+#include <boost/algorithm/string.hpp>
 #include <ctemplate/template.h>
 
 #include "ipcpipe.h"
 #include "ctemps/alltemplates.h"
 #include "usermessage.h"
+#include "paramentry.h"
+#include "optionset.h"
 
 using namespace std;
 using namespace boost;
@@ -35,6 +38,8 @@ struct to_string_visitor : boost::static_visitor<>
 
 };
 
+
+
 class HtmltailOption {
 public:
 	HtmltailOption() {
@@ -43,21 +48,25 @@ public:
 		}
 
 		const char *script = ::getenv("HTMLTAIL_SCRIPTPATH");
-		parameters["SCRIPT"] = string(script==NULL ? "" : script);
+		parameters["SCRIPT"] = ParamEntry(string(script==NULL ? "" : script), false);
 		const char * idc = ::getenv("HTMLTAIL_ID");
 		id = string(idc==NULL ? "" : idc);
-		parameters["ID"]  = id;
-		parameters["SEQ"] = readSequence();
+		parameters["ID"]  = ParamEntry(id, false);
+		parameters["SEQ"] = ParamEntry(readSequence(), false);
 	}
 
 	virtual ~HtmltailOption() {};
 
-	void setOptionName(string optionName) {
+	void setCommandName(string optionName) {
 		this->optionName = optionName;
 	}
 
-	void addParameters(map<string, variant<string, int> > addPars) {
+	void addParameters(map<string, ParamEntry > addPars) {
 		parameters.insert(addPars.begin(), addPars.end());
+	}
+
+	void setOptions(map<string, OptionSet> options) {
+		this->options = options;
 	}
 
 	virtual int run() {
@@ -99,11 +108,28 @@ protected:
 	string pageFromTemplate(const char *tmplText) {
 		ctemplate::TemplateDictionary dict("page");
 
-		for (std::map<string, variant<string, int> >::iterator iter = parameters.begin();
+		for (std::map<string, ParamEntry >::iterator iter = parameters.begin();
 				iter != parameters.end(); iter++) {
 			to_string_visitor vis;
-			apply_visitor(vis, iter->second);
-			dict.SetValue(iter->first, vis.str);
+			apply_visitor(vis, iter->second.value);
+
+			if(iter->second.optional) {
+				dict.SetValueAndShowSection(iter->first, vis.str, string("IF_") + iter->first);
+			}
+			else {
+				dict.SetValue(iter->first, vis.str);
+			}
+		}
+
+		for (std::map<string, OptionSet >::iterator iter = options.begin();
+						iter != options.end(); iter++) {
+			to_string_visitor vis;
+			apply_visitor(vis, iter->second.value);
+
+			string sectionName = boost::replace_all_copy(to_upper_copy(iter->first.substr(2)), "-", "_");
+
+			fprintf(stderr, "Set option %s : %s\n", sectionName.c_str(), vis.str.c_str());
+			dict.SetValueAndShowSection(sectionName, vis.str, string("IF_") + sectionName);
 		}
 
 		string res;
@@ -141,7 +167,8 @@ protected:
 
 	string optionName;
 	string id;
-	map<string, variant<string, int> > parameters;
+	map<string, ParamEntry> parameters;
+	map<string, OptionSet> options;
 	map<string, string> allTemplateMap;
 };
 

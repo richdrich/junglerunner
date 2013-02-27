@@ -16,6 +16,8 @@ using namespace std;
 #include "htmltailmsgbox.h"
 #include "htmltailinputbox.h"
 #include "commanddef.h"
+#include "optiondef.h"
+#include "optionset.h"
 
 class RunClient {
 public:
@@ -23,17 +25,33 @@ public:
 		this->argc = argc;
 		this->argv = argv;
 
-		//const char *whiptailOptions[] = { "--infobox", "--msgbox", "--inputbox", "" };
-
 		argStart = -1;
 		pActiveCommand = NULL;
-		//doWhiptail = WT_NULL;
+
+		for(int opti=0; opti<numOptionDefs; opti++) {
+			optionSettings[optionDefs[opti].name] = OptionSet(optionDefs[opti].defaultValue, true);
+		}
+
 		for(int argi=1; argi<argc; argi++) {
-			for(int wtoi=0; wtoi<numCommandDefs; wtoi++) {
-				if(strcmp(argv[argi], commandDefs[wtoi].option)==0) {
-					pActiveCommand = &commandDefs[wtoi];
-					argStart = argi+1;
-					break;
+			if(argv[argi][0]=='-' && argv[argi][1]=='-') {
+
+				for(int wtoi=0; wtoi<numCommandDefs; wtoi++) {
+					if(strcmp(argv[argi], commandDefs[wtoi].option)==0) {
+						pActiveCommand = &commandDefs[wtoi];
+						argStart = argi+1;
+						break;
+					}
+				}
+
+				for(int opti=0; opti<numOptionDefs; opti++) {
+					if(strcmp(argv[argi], optionDefs[opti].name.c_str())==0) {
+						if(optionDefs[opti].hasText) {
+							optionSettings[optionDefs[opti].name] = OptionSet(string(argv[++argi]), false);
+						}
+						else {
+							optionSettings[optionDefs[opti].name] = OptionSet(true, false);
+						}
+					}
 				}
 			}
 		}
@@ -44,10 +62,11 @@ public:
 			return -1;
 		}
 
-		map<string, variant<string, int> > params;
+		map<string, ParamEntry > params;
 		bool optsDone=false;
 		for(uint ai=0; pActiveCommand->argNames[ai][0]; ai++) {
-			if((argStart + ai) >= (uint)argc || argv[argStart+ai][0]=='-') {
+			bool optional = (argStart + ai) >= (uint)argc;
+			if(optional || argv[argStart+ai][0]=='-') {
 				optsDone = true;
 			}
 
@@ -57,24 +76,26 @@ public:
 
 			if(argType=='S') {
 				if(optsDone) {
-					params[pActiveCommand->argNames[ai]] = string();
+					params[pActiveCommand->argNames[ai]] = ParamEntry("", optional);
 				}
 				else {
-					params[pActiveCommand->argNames[ai]] = string(argv[argStart+ai]);
+					params[pActiveCommand->argNames[ai]] = ParamEntry(argv[argStart+ai], optional);
 				}
 			}
 			else if(argType=='I') {
 				if(optsDone) {
-					params[pActiveCommand->argNames[ai]] = 0;
+					params[pActiveCommand->argNames[ai]] = ParamEntry(0, optional);
 				}
 				else {
-					params[pActiveCommand->argNames[ai]] = lexical_cast<int>(string(argv[argStart+ai]));
+					params[pActiveCommand->argNames[ai]]
+					       = ParamEntry(lexical_cast<int>(string(argv[argStart+ai])), optional);
 				}
 			}
 		}
 
 		pActiveCommand->optionClass->addParameters(params);
-		pActiveCommand->optionClass->setOptionName(string(&pActiveCommand->option[2]));
+		pActiveCommand->optionClass->setOptions(optionSettings);
+		pActiveCommand->optionClass->setCommandName(string(&pActiveCommand->option[2]));
 		return pActiveCommand->optionClass->run();
 	}
 
@@ -92,6 +113,8 @@ private:
 
 	static int numCommandDefs;
 	static CommandDef commandDefs[];
+	static int numOptionDefs;
+	static OptionDef optionDefs[];
 
 	int argc;
 	char **argv;
@@ -99,6 +122,7 @@ private:
 	// enum whiptailCmdEnum doWhiptail;
 	uint argStart;
 	CommandDef *pActiveCommand;
+	map <string, OptionSet> optionSettings;
 
 };
 

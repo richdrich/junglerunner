@@ -21,36 +21,6 @@ public:
 
 	}
 
-//	HtmltailInputBox(const char *text, int height, int width, string init) : HtmltailOption()
-//	{
-//		parameters["TEXT"] = string(text);
-//		parameters["HEIGHT"] = height;
-//		parameters["WIDTH"] = width;
-//		parameters["INIT"] = init;
-//	}
-
-//	virtual int run() {
-//
-//		string page = pageFromTemplate(inputbox);
-//
-//		getPipe()->send(page.c_str());
-//
-//		string response = getPipe()->receive();
-//		UserMessage msg = UserMessage::fromSerialized(response.c_str());
-//
-//		// fprintf(stderr, "setenv sequence %d\n", msg.sequence);
-//		writeSequence(boost::lexical_cast<string>(msg.sequence));
-//
-//		fputs(msg.args["input"].c_str(), stderr);
-//
-//		if(msg.args.count("cancel")) {
-//			return -1;
-//		}
-//
-//
-//		return 0;
-//	}
-
 	virtual int processResultMsg(UserMessage msg) {
 		fputs(msg.args["input"].c_str(), stderr);
 

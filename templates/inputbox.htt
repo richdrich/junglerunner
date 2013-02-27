@@ -16,6 +16,7 @@
 <div class='leftbutton'><input type='submit' name='cancel' value='Cancel' /></div>
 <div class='rightbutton'><input type='submit' name='submit' value='Ok' /></div>
 </div>
+
 </div>
 </div>
 </form>
