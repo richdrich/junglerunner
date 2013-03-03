@@ -17,8 +17,16 @@ public:
 
 protected:
 	virtual int processResultMsg(UserMessage msg) {
+		ParamEntry tags = parameters["TAG"];
 
-		fputs(msg.args["input"].c_str(), stderr);
+		for(vector<boost::variant<string, int> >::iterator tagValue=tags.values.begin(); tagValue!=tags.values.end(); tagValue++) {
+			string strTag = boost::lexical_cast<string>(*tagValue);
+			if(msg.args.count(strTag)) {
+				fputs(strTag.c_str(), stderr);
+				break;
+			}
+		}
+
 
 		return HtmltailOption::processResultMsg(msg);
 	}

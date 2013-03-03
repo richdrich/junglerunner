@@ -12,7 +12,7 @@
 <div class='prompt gentext'>{{TEXT}}</div>
 
 {{#MENU_ROWS}}
-<input type='submit' name='input' value='{{TAG}}' />
+<input type='submit' name='{{TAG}}' value='{{ITEM}}' />
 {{/MENU_ROWS}}
 
 

@@ -82,7 +82,7 @@ static const char * AllTemplates[][2] = {
 "<div class='prompt gentext'>{{TEXT}}</div>\n"
 "\n"
 "{{#MENU_ROWS}}\n"
-"<input type='submit' name='input' value='{{TAG}}' />\n"
+"<input type='submit' name='{{TAG}}' value='{{ITEM}}' />\n"
 "{{/MENU_ROWS}}\n"
 "\n"
 "\n"
