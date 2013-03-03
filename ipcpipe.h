@@ -13,6 +13,8 @@
 #include <sys/stat.h>
 #include <errno.h>
 
+#include "debug.h"
+
 using namespace std;
 
 class IpcPipe {
@@ -80,7 +82,7 @@ public:
 			if(readlen ==0) {
 				fclose(pipes[1]);
 				connected[1] = false;
-				fprintf(stderr, "fread length disconnected\n");
+				debugf( "fread length disconnected\n");
 				return "";
 			}
 
@@ -101,7 +103,7 @@ public:
 		if(rc ==0 && n<len) {
 			fclose(pipes[1]);
 			connected[1] = false;
-			// fprintf(stderr, "fread buffer disconnected\n");
+			// debugf( "fread buffer disconnected\n");
 			return "";
 		}
 
@@ -173,16 +175,16 @@ private:
 			}
 		}
 
-		//fprintf(stderr, "(%s) Opening pipe %s for %s\n",
+		//debugf( "(%s) Opening pipe %s for %s\n",
 		//		inbound ? "inbound" : "outbound", pipefile.c_str(), dir);
 		pipes[pidx] = fopen(pipefile.c_str(), dir);
 		if(pipes[pidx]==NULL) {
 			perror("fopen");
 			return false;
 		}
-		//fprintf(stderr, "Pipe %s connected\n", pipefile.c_str());
+		//debugf( "Pipe %s connected\n", pipefile.c_str());
 
-		//fprintf(stderr, "Connected, inbound=%s\n", inbound ? "true" : "false");
+		//debugf( "Connected, inbound=%s\n", inbound ? "true" : "false");
 
 		connected[pidx] = true;
 		return true;

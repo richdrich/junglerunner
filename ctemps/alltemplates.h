@@ -66,6 +66,32 @@ static const char * AllTemplates[][2] = {
 "<div>\n"
 "</body></html>\n"
 }
+,
+{ "menu", 
+"<html>\n"
+"<head><title>Menu</title>\n"
+"<link rel=\"stylesheet\" type=\"text/css\" href=\"/resource/default.css\">\n"
+"</head>\n"
+"\n"
+"<body>\n"
+"<form action='{{SCRIPT}}' method='get'>\n"
+"<div class='main'>\n"
+"<div class='content'>\n"
+"<input type='hidden' name='seq' value='{{SEQ}}' />\n"
+"<input type='hidden' name='id' value='{{ID}}' />\n"
+"<div class='prompt gentext'>{{TEXT}}</div>\n"
+"\n"
+"{{#MENU_ROWS}}\n"
+"<input type='submit' name='input' value='{{TAG}}' />\n"
+"{{/MENU_ROWS}}\n"
+"\n"
+"\n"
+"</div>\n"
+"</div>\n"
+"</form>\n"
+"</body>\n"
+"</html>\n"
+}
 };
-const int NumTemplates=3;
+const int NumTemplates=4;
 #endif

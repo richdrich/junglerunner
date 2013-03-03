@@ -14,22 +14,29 @@
 using namespace std;
 
 struct ParamEntry {
-	ParamEntry(boost::variant<string, int> value, bool optional=false) {
-		this->value = value;
+	ParamEntry(boost::variant<string, int> value, bool optional, string section) {
+		this->values.push_back(value);
 		this->optional = optional;
+		this->section = section;
 	}
 
 	ParamEntry(const ParamEntry &other) {
-		this->value = other.value;
+		this->values = other.values;
 		this->optional = other.optional;
+		this->section = other.section;
 	}
 
 	ParamEntry() {
 		optional = false;
 	}
 
-	boost::variant<string, int> value;
+	void add(vector< boost::variant<string, int> > other) {
+		values.insert(values.end(), other.begin(), other.end());
+	}
+
+	vector< boost::variant<string, int> > values;
 	bool optional;
+	string section;
 };
 
 

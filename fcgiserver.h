@@ -22,6 +22,7 @@
 #include "ipcpipe.h"
 #include "usermessage.h"
 #include "processinfo.h"
+#include "debug.h"
 
 class FcgiServer;
 
@@ -97,11 +98,11 @@ public:
 		    FCGX_Request *pRequest = new FCGX_Request();
 		    FCGX_InitRequest(pRequest, sockfd, 0);
 
-		    fprintf(stderr, "Waiting for request\n");
+		    debugf( "Waiting for request\n");
 		    int acceptres = FCGX_Accept_r(pRequest);
 
 	    	if(acceptres < 0) {
-	    		fprintf(stderr, "FCGX_Accept_r failed returned %d, errno=%d\n", acceptres, errno);
+	    		debugf( "FCGX_Accept_r failed returned %d, errno=%d\n", acceptres, errno);
 	    		break;
 	    	}
 
@@ -114,7 +115,7 @@ public:
 	        // Parse the GET query and put the id tag in 'id'
 	        // and all other params into UserMessage.args
 	        const char *qstring = FCGX_GetParam("QUERY_STRING", pRequest->envp);
-	        fprintf(stderr, "Processing request, qstring=%s\n", qstring);
+	        debugf( "Processing request, qstring=%s\n", qstring);
 
 	        ::UriQueryListA *queryList;
 	        int numparams;
@@ -168,7 +169,7 @@ public:
 	        		::FCGX_PutS( "Status: 500\r\n\r\nNo active shell\r\n", pRequest->out);
 	        		::FCGX_Finish_r(pRequest);
 
-	        		fprintf(stderr, "Error 500 no active shell for %s\n", id.c_str());
+	        		debugf( "Error 500 no active shell for %s\n", id.c_str());
 	        		continue;
 	        	}
 
@@ -177,7 +178,7 @@ public:
 	        		::FCGX_PutS( "Status: 500\r\n\r\nOut of sequence\r\n", pRequest->out);
 	        		::FCGX_Finish_r(pRequest);
 
-	        		fprintf(stderr, "Error 500 out of sequence for %s\n", id.c_str());
+	        		debugf( "Error 500 out of sequence for %s\n", id.c_str());
 	        		continue;
 	        	}
 
@@ -199,7 +200,7 @@ public:
 	        processInfoMap[id]->incomingThreadHandle = incomingThreadHandle;
 
 
-	        fprintf(stderr, "Request processing passed to threads\n");
+	        debugf( "Request processing passed to threads\n");
 
 	    }
 
@@ -251,7 +252,7 @@ private:
 	}
 
 	static void sigUsr1Handler(int sig) {
-		fprintf(stderr, "Got signal %d\n", sig);
+		debugf( "Got signal %d\n", sig);
 	}
 
 	static void * readIncoming(void *pVoidArgs) {
@@ -264,10 +265,10 @@ private:
 			 content = pArgs->pipe->receive();
 
 			if(content.empty()) {
-				fprintf(stderr, "readIncoming got empty message\n");
+				debugf( "readIncoming got empty message\n");
 			}
 			else {
-				fprintf(stderr, "readIncoming got message %s\n", content.c_str());
+				debugf( "readIncoming got message %s\n", content.c_str());
 			}
 		}
 
@@ -286,9 +287,9 @@ private:
 		pArgs->pThis->processInfoMap[id]->activeRequest = NULL;
 		pArgs->pThis->processInfoMap[id]->incomingThreadHandle = NULL;
 
-		fprintf(stderr, "readIncoming notifying completion\n");
+		debugf( "readIncoming notifying completion\n");
 		boost::lock_guard<boost::mutex> lock(pArgs->pThis->processInfoMap[id]->threadCompleteLockMutex);
-		fprintf(stderr, "readIncoming has lock\n");
+		debugf( "readIncoming has lock\n");
 		pArgs->pThis->processInfoMap[id]->threadCompleteOccurred = true;
 		pArgs->pThis->processInfoMap[id]->threadCompleteCond.notify_one();
 		pArgs->pThis->processInfoMap[id]->incomingThreadHandle = NULL;
@@ -317,12 +318,12 @@ private:
 		else {
 			pArgs->pThis->processInfoMap[pArgs->id]->shellIsActive = true;
 
-			fprintf(stderr, "Waiting for pid %d\n", spawnedPid);
+			debugf( "Waiting for pid %d\n", spawnedPid);
 
 			int status;
 			::waitpid(spawnedPid, &status, 0);
 
-			fprintf(stderr, "Wait for %d finished with %d\n", spawnedPid, status);
+			debugf( "Wait for %d finished with %d\n", spawnedPid, status);
 			pArgs->pThis->processInfoMap[pArgs->id]->shellIsActive = false;
 
 //			sleep(2);	// let the last message come through
@@ -333,7 +334,7 @@ private:
 		// wait for message processing
 		{
 			boost::unique_lock<boost::mutex> lock(pArgs->pThis->processInfoMap[pArgs->id]->threadCompleteLockMutex);
-			fprintf(stderr, "runShell has lock\n");
+			debugf( "runShell has lock\n");
 			if(!pArgs->pThis->processInfoMap[pArgs->id]->threadCompleteOccurred) {
 				boost::system_time const timeout=boost::get_system_time() + boost::posix_time::milliseconds(2000);
 
@@ -342,19 +343,19 @@ private:
 		}
 
 		// terminate any live message processor
-		fprintf(stderr, "Signal incomingThread\n");
+		debugf( "Signal incomingThread\n");
 		pArgs->pThis->processInfoMap[pArgs->id]->finishIncoming = true;
 
 		if(pArgs->pThis->processInfoMap[pArgs->id]->incomingThreadHandle != NULL && ::pthread_kill(pArgs->pThis->processInfoMap[pArgs->id]->incomingThreadHandle, SIGUSR1) != ESRCH) {
-			fprintf(stderr, "Waiting for incomingThread termination\n");
+			debugf( "Waiting for incomingThread termination\n");
 			void * incomingRetVal;
 			::pthread_join(pArgs->pThis->processInfoMap[pArgs->id]->incomingThreadHandle, &incomingRetVal);
 		}
 		else {
-			fprintf(stderr, "runShell thread %s terminating after request terminated by message\n", pArgs->id.c_str());
+			debugf( "runShell thread %s terminating after request terminated by message\n", pArgs->id.c_str());
 		}
 
-		fprintf(stderr, "runShell thread exits\n");
+		debugf( "runShell thread exits\n");
 
 		// Remove the entry
 		delete pArgs->pThis->processInfoMap[pArgs->id];

@@ -7,11 +7,14 @@
 
 #include "runclient.h"
 
-int RunClient::numCommandDefs = 3;
-CommandDef RunClient::commandDefs[3] = {
-	CommandDef("--msgbox", "SII", "", (const char *[]){"TEXT", "HEIGHT", "WIDTH", ""}, new HtmltailMsgBox()),
-	CommandDef("--infobox", "SII", "", (const char *[]){"TEXT", "HEIGHT", "WIDTH", ""}, new HtmltailInfoBox()),
-	CommandDef("--inputbox", "SII", "S", (const char *[]){"TEXT", "HEIGHT", "WIDTH", "INIT", ""}, new HtmltailInputBox())
+int RunClient::numCommandDefs = 4;
+CommandDef RunClient::commandDefs[4] = {
+	CommandDef("--msgbox", "SII", "", 3, (const char *[]){"TEXT", "HEIGHT", "WIDTH", ""}, NULL, new HtmltailMsgBox()),
+	CommandDef("--infobox", "SII", "", 3, (const char *[]){"TEXT", "HEIGHT", "WIDTH", ""}, NULL, new HtmltailInfoBox()),
+	CommandDef("--inputbox", "SII", "S", 4, (const char *[]){"TEXT", "HEIGHT", "WIDTH", "INIT", ""}, NULL, new HtmltailInputBox()),
+	CommandDef("--menu", "SIII", "SS*",
+			6, (const char *[]){"TEXT", "HEIGHT", "WIDTH", "MENU_HEIGHT", "TAG", "ITEM", ""},
+			(const char *[]){"", "", "", "", "MENU_ROWS", ""},new HtmltailMenu())
 };
 
 int RunClient::numOptionDefs = 1;

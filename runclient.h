@@ -15,9 +15,11 @@ using namespace std;
 #include "htmltailinfobox.h"
 #include "htmltailmsgbox.h"
 #include "htmltailinputbox.h"
+#include "htmltailmenu.h"
 #include "commanddef.h"
 #include "optiondef.h"
 #include "optionset.h"
+#include "debug.h"
 
 class RunClient {
 public:
@@ -64,33 +66,48 @@ public:
 
 		map<string, ParamEntry > params;
 		bool optsDone=false;
-		for(uint ai=0; pActiveCommand->argNames[ai][0]; ai++) {
-			bool optional = (argStart + ai) >= (uint)argc;
-			if(optional || argv[argStart+ai][0]=='-') {
-				optsDone = true;
+
+		uint argDefIdx=0;
+		for(uint argIdx=argStart; argIdx < (uint)argc; argIdx++) {
+
+			if(argv[argIdx][0]=='-') {
+				break;
 			}
 
-			char argType = ai < strlen(pActiveCommand->reqArgs)
-				? pActiveCommand->reqArgs[ai]
-				: pActiveCommand->optArgs[ai - strlen(pActiveCommand->reqArgs)];
+			bool optional = argDefIdx >= strlen(pActiveCommand->reqArgs);
+			char argType = optional
+				? pActiveCommand->optArgs[argDefIdx - strlen(pActiveCommand->reqArgs)]
+				: pActiveCommand->reqArgs[argDefIdx];
+
+			debugf( "process argIdx=%d, argDefIdx=%d, optional=%s, argType=%c, arg=%s\n",
+				argIdx, argDefIdx, optional ? "t" : "f", argType, 	pActiveCommand->argNames[argDefIdx]);
+
+			if(argType=='*') {
+				argDefIdx = strlen(pActiveCommand->reqArgs);
+				argIdx--;
+				continue;
+			}
 
 			if(argType=='S') {
 				if(optsDone) {
-					params[pActiveCommand->argNames[ai]] = ParamEntry("", optional);
+					addParam(params, string(pActiveCommand->argNames[argDefIdx]), ParamEntry("", optional, pActiveCommand->sections[argDefIdx]));
 				}
 				else {
-					params[pActiveCommand->argNames[ai]] = ParamEntry(argv[argStart+ai], optional);
+					addParam(params, string(pActiveCommand->argNames[argDefIdx]), ParamEntry(argv[argIdx], optional, pActiveCommand->sections[argDefIdx]));
 				}
 			}
 			else if(argType=='I') {
 				if(optsDone) {
-					params[pActiveCommand->argNames[ai]] = ParamEntry(0, optional);
+					addParam(params, string(pActiveCommand->argNames[argDefIdx]), ParamEntry(0, optional, pActiveCommand->sections[argDefIdx]));
 				}
 				else {
-					params[pActiveCommand->argNames[ai]]
-					       = ParamEntry(lexical_cast<int>(string(argv[argStart+ai])), optional);
+					addParam(params, string(pActiveCommand->argNames[argDefIdx]),
+							ParamEntry(lexical_cast<int>(string(argv[argIdx])), optional, pActiveCommand->sections[argDefIdx]));
 				}
 			}
+
+			argDefIdx++;
+
 		}
 
 		pActiveCommand->optionClass->addParameters(params);
@@ -100,9 +117,18 @@ public:
 	}
 
 private:
+	void addParam(map<string, ParamEntry > &params, string name, struct ParamEntry ent) {
+		if(params.count(name)) {
+			params[name].add(ent.values);
+		}
+		else {
+			params[name] = ent;
+		}
+	}
+
 	bool checkArgCount(int argRequired) {
 		if(argc < argRequired) {
-			fprintf(stderr, "%d arguments, need at least %d\n", argc, argRequired);
+			debugf( "%d arguments, need at least %d\n", argc, argRequired);
 			return false;
 		}
 

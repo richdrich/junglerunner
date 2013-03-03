@@ -22,6 +22,7 @@
 #include "usermessage.h"
 #include "paramentry.h"
 #include "optionset.h"
+#include "debug.h"
 
 using namespace std;
 using namespace boost;
@@ -48,11 +49,11 @@ public:
 		}
 
 		const char *script = ::getenv("HTMLTAIL_SCRIPTPATH");
-		parameters["SCRIPT"] = ParamEntry(string(script==NULL ? "" : script), false);
+		parameters["SCRIPT"] = ParamEntry(string(script==NULL ? "" : script), false, "");
 		const char * idc = ::getenv("HTMLTAIL_ID");
 		id = string(idc==NULL ? "" : idc);
-		parameters["ID"]  = ParamEntry(id, false);
-		parameters["SEQ"] = ParamEntry(readSequence(), false);
+		parameters["ID"]  = ParamEntry(id, false, "");
+		parameters["SEQ"] = ParamEntry(readSequence(), false, "");
 	}
 
 	virtual ~HtmltailOption() {};
@@ -78,7 +79,7 @@ public:
 		string response = getPipe()->receive();
 		UserMessage msg = UserMessage::fromSerialized(response.c_str());
 
-		// fprintf(stderr, "setenv sequence %d\n", msg.sequence);
+		// debugf( "setenv sequence %d\n", msg.sequence);
 		writeSequence(boost::lexical_cast<string>(msg.sequence));
 
 		return processResultMsg(msg);
@@ -108,15 +109,45 @@ protected:
 	string pageFromTemplate(const char *tmplText) {
 		ctemplate::TemplateDictionary dict("page");
 
+		map <string, vector<ctemplate::TemplateDictionary *> > sectionDicts;
+
 		for (std::map<string, ParamEntry >::iterator iter = parameters.begin();
 				iter != parameters.end(); iter++) {
-			to_string_visitor vis;
-			apply_visitor(vis, iter->second.value);
 
-			if(iter->second.optional) {
-				dict.SetValueAndShowSection(iter->first, vis.str, string("IF_") + iter->first);
+			if(!iter->second.section.empty()) {
+
+				for(uint rowIdx=0; rowIdx < iter->second.values.size(); rowIdx++) {
+					boost::variant<string, int> rowItem = iter->second.values[rowIdx];
+
+					to_string_visitor vis;
+					apply_visitor(vis, rowItem);
+
+					debugf( "Set in section %s[%d] %s = %s\n",
+						iter->second.section.c_str(), rowIdx, iter->first.c_str(), vis.str.c_str());
+
+					ctemplate::TemplateDictionary* sub_dict;
+					if(sectionDicts.count(iter->second.section)) {
+						if(sectionDicts[iter->second.section].size() > rowIdx) {
+							sub_dict = sectionDicts[iter->second.section][rowIdx];
+						}
+						else {
+							sub_dict = dict.AddSectionDictionary(iter->second.section);
+							sectionDicts[iter->second.section].push_back(sub_dict);
+						}
+					}
+					else {
+						 sub_dict = dict.AddSectionDictionary(iter->second.section);
+						 sectionDicts[iter->second.section] = vector<ctemplate::TemplateDictionary *>();
+						 sectionDicts[iter->second.section].push_back(sub_dict);
+					}
+
+					sub_dict->SetValue(iter->first, vis.str);
+				}
 			}
 			else {
+				to_string_visitor vis;
+				apply_visitor(vis, iter->second.values[0]);
+
 				dict.SetValue(iter->first, vis.str);
 			}
 		}
@@ -128,7 +159,7 @@ protected:
 
 			string sectionName = boost::replace_all_copy(to_upper_copy(iter->first.substr(2)), "-", "_");
 
-			fprintf(stderr, "Set option %s : %s\n", sectionName.c_str(), vis.str.c_str());
+			// debugf( "Set option %s : %s\n", sectionName.c_str(), vis.str.c_str());
 			dict.SetValueAndShowSection(sectionName, vis.str, string("IF_") + sectionName);
 		}
 
