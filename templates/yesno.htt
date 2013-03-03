@@ -1,0 +1,22 @@
+<html>
+<head><title>Prompt</title>
+<link rel="stylesheet" type="text/css" href="/resource/default.css">
+</head>
+
+<body>
+<form action='{{SCRIPT}}' method='get'>
+<div class='main'>
+<div class='content'>
+<input type='hidden' name='seq' value='{{SEQ}}' />
+<input type='hidden' name='id' value='{{ID}}' />
+<div class='text gentext'>{{TEXT}}</div>
+
+<div class='buttons'>
+<div class='leftbutton'><input type='submit' name='submit' value='Yes' /></div>
+<div class='rightbutton'><input type='submit' name='cancel' value='No' /></div>
+</div>
+</div>
+</div>
+</form>
+</body>
+</html>

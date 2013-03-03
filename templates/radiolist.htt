@@ -1,0 +1,29 @@
+<html>
+<head><title>Menu</title>
+<link rel="stylesheet" type="text/css" href="/resource/default.css">
+</head>
+
+<body>
+<form action='{{SCRIPT}}' method='get'>
+<div class='main'>
+<div class='content'>
+<input type='hidden' name='seq' value='{{SEQ}}' />
+<input type='hidden' name='id' value='{{ID}}' />
+<div class='prompt gentext'>{{TEXT}}</div>
+
+{{#MENU_ROWS}}
+<div class='menurow'><input type='radio' name='select' value='{{TAG}}' /><div class='menulabel'>{{ITEM}}</div></div>
+{{/MENU_ROWS}}
+
+<div class='buttons'>
+<div class='leftbutton'><input type='submit' name='cancel' value='Cancel' /></div>
+{{#IF_OK_BUTTON}}
+<div class='rightbutton'><input type='submit' name='submit' value='{{OK_BUTTON}}' /></div>
+{{/IF_OK_BUTTON}}
+</div>
+
+</div>
+</div>
+</form>
+</body>
+</html>

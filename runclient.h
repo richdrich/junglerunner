@@ -16,6 +16,7 @@ using namespace std;
 #include "htmltailmsgbox.h"
 #include "htmltailinputbox.h"
 #include "htmltailmenu.h"
+#include "htmltailselect.h"
 #include "commanddef.h"
 #include "optiondef.h"
 #include "optionset.h"
